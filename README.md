@@ -12,4 +12,4 @@ consumes this repo as the `dwl-patches-src` flake input and applies every
 | `dwl-rule-geom.patch` | optional initial geometry (position and size) on window rules |
 | `dwl-software-cursors.patch` | software cursor compositing when `DWL_SOFTWARE_CURSORS` is set, for hypervisors whose hardware cursor plane doesn't render (Parallels virtio-gpu) |
 
-Patches to dwl are derived from dwl and carry its licence (GPL-3.0).
+Patches to dwl are derived from dwl and carry its licence, GPL-3.0 (see `LICENSE`).
