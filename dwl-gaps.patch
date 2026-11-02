@@ -1,0 +1,49 @@
+--- orig/dwl.c	2026-07-03 23:20:28.252081869 +0900
++++ new/dwl.c	2026-07-03 23:20:28.275655562 +0900
+@@ -2712,7 +2712,8 @@
+ void
+ tile(Monitor *m)
+ {
+-	unsigned int mw, my, ty;
++	unsigned int mw, my, ty, g;
++	int wx, wy, ww, wh;
+ 	int i, n = 0;
+ 	Client *c;
+ 
+@@ -2722,22 +2723,28 @@
+ 	if (n == 0)
+ 		return;
+ 
++	g = n > 1 ? gappx : 0;
++	wx = m->w.x + g;
++	wy = m->w.y + g;
++	ww = m->w.width  - 2 * g;
++	wh = m->w.height - 2 * g;
++
+ 	if (n > m->nmaster)
+-		mw = m->nmaster ? (int)roundf(m->w.width * m->mfact) : 0;
++		mw = m->nmaster ? (int)roundf((ww - g) * m->mfact) : 0;
+ 	else
+-		mw = m->w.width;
++		mw = ww;
+ 	i = my = ty = 0;
+ 	wl_list_for_each(c, &clients, link) {
+ 		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+ 			continue;
+ 		if (i < m->nmaster) {
+-			resize(c, (struct wlr_box){.x = m->w.x, .y = m->w.y + my, .width = mw,
+-				.height = (m->w.height - my) / (MIN(n, m->nmaster) - i)}, 0);
+-			my += c->geom.height;
++			resize(c, (struct wlr_box){.x = wx, .y = wy + my, .width = mw,
++				.height = (wh - my - g * (MIN(n, m->nmaster) - i - 1)) / (MIN(n, m->nmaster) - i)}, 0);
++			my += c->geom.height + g;
+ 		} else {
+-			resize(c, (struct wlr_box){.x = m->w.x + mw, .y = m->w.y + ty,
+-				.width = m->w.width - mw, .height = (m->w.height - ty) / (n - i)}, 0);
+-			ty += c->geom.height;
++			resize(c, (struct wlr_box){.x = wx + mw + g, .y = wy + ty,
++				.width = ww - mw - g, .height = (wh - ty - g * (n - i - 1)) / (n - i)}, 0);
++			ty += c->geom.height + g;
+ 		}
+ 		i++;
+ 	}

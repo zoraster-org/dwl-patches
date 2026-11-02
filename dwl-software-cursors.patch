@@ -1,0 +1,21 @@
+Composite the cursor in software when DWL_SOFTWARE_CURSORS is set.
+
+Some hypervisors (Parallels' virtio-gpu) accept a hardware cursor plane
+but never display it, so the pointer is invisible. wlroots 0.18+ dropped
+the WLR_NO_HARDWARE_CURSORS switch; the compositor has to lock software
+cursors itself. Opt-in via the environment so real GPUs keep the plane.
+Applies on top of dwl-ipc-v2.patch (uses its createmon context).
+
+--- a/dwl.c
++++ b/dwl.c
+@@ -1010,6 +1010,10 @@ createmon(struct wl_listener *listener, void *data)
+ 	m = wlr_output->data = ecalloc(1, sizeof(*m));
+ 	m->wlr_output = wlr_output;
+ 
++	/* Hypervisor cursor planes may be accepted but never shown. */
++	if (getenv("DWL_SOFTWARE_CURSORS"))
++		wlr_output_lock_software_cursors(wlr_output, 1);
++
+ 	wl_list_init(&m->dwl_ipc_outputs);
+ 
+ 	for (i = 0; i < LENGTH(m->layers); i++)

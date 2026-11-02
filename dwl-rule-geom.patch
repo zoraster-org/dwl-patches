@@ -1,0 +1,39 @@
+Add optional initial geometry hint to Rule.
+
+When a rule sets w > 0, the client's initial floating position and size are
+placed according to (x, y, w, h). Coordinates are relative to the target
+monitor's usable area (mon->w) so waybar / other layer-shell exclusive zones
+are respected automatically. Negative x/y anchors from the bottom-right edge.
+
+--- a/dwl.c
++++ b/dwl.c
+@@ -227,6 +227,12 @@ typedef struct {
+ 	uint32_t tags;
+ 	int isfloating;
+ 	int monitor;
++	/* Initial geometry hint (applied when w > 0). Coordinates are relative
++	 * to the target monitor's usable area (mon->w — excludes layer-shell
++	 * exclusive zones like waybar). Non-negative x/y offset from the
++	 * top-left; negative x/y anchor from the bottom-right (x = -20 leaves
++	 * 20px between window's right edge and mon->w's right edge). */
++	int x, y, w, h;
+ } Rule;
+
+ typedef struct {
+@@ -496,6 +502,16 @@ applyrules(Client *c)
+ 				if (r->monitor == i++)
+ 					mon = m;
+ 			}
++			if (r->w > 0) {
++				c->geom.width = r->w;
++				c->geom.height = r->h > 0 ? r->h : c->geom.height;
++				c->geom.x = r->x >= 0
++					? mon->w.x + r->x
++					: mon->w.x + mon->w.width + r->x - c->geom.width;
++				c->geom.y = r->y >= 0
++					? mon->w.y + r->y
++					: mon->w.y + mon->w.height + r->y - c->geom.height;
++			}
+ 		}
+ 	}
+
